@@ -1,0 +1,10 @@
+---
+include:
+- "lib/**/*.rb"
+- "app/**/*.rb"
+exclude:
+- spec/**/*
+- test/**/*
+reporters:
+- rubocop
+max_files: 5000

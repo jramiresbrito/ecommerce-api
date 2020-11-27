@@ -1,0 +1,70 @@
+Layout/LineLength:
+  Max: 120
+Layout/EmptyLines:
+  Enabled: false
+Metrics/ClassLength:
+  Max: 150
+Metrics/BlockLength:
+  Max: 35
+Metrics/MethodLength:
+  Max: 20
+Metrics/AbcSize:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/ConditionalAssignment:
+  Enabled: false
+Style/StringLiterals:
+  Enabled: false
+Style/RedundantReturn:
+  Enabled: false
+Style/SelfAssignment:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/RegexpLiteral:
+  Enabled: false
+Style/GuardClause:
+  Enabled: false
+Style/WordArray:
+  Enabled: false
+Style/SymbolProc:
+  Enabled: false
+Style/MutableConstant:
+  Enabled: false
+Style/SignalException:
+  Enabled: false
+Style/MissingRespondToMissing:
+  Enabled: false
+Style/HashEachMethods:
+  Enabled: false
+Style/HashTransformKeys:
+  Enabled: false
+Style/HashTransformValues:
+  Enabled: false
+Style/ClassAndModuleChildren:
+  EnforcedStyle: compact
+Lint/MissingSuper:
+  Enabled: false
+Lint/UnusedMethodArgument:
+  Enabled: false
+Security/Open:
+  Enabled: false
+Bundler/OrderedGems:
+  Enabled: false
+# Lint/RaiseException:
+#   Enabled: false
+# Lint/StructNewOverride:
+#   Enabled: false
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 2.6
+  Exclude:
+    - '**/Rakefile'
+    - '**/spec/**/*'
+    - '**/db/schema.rb'
