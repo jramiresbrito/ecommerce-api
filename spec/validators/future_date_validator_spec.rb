@@ -37,7 +37,7 @@ describe FutureDateValidator do
   end
 
   context "when date is after current date" do
-    before { subject.date = Time.zone.now + 1.day }
+    before { subject.date = 1.day.after }
 
     it "should be valid" do
       expect(subject.valid?).to be_truthy
