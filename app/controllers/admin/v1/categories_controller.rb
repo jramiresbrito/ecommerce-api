@@ -22,7 +22,6 @@ module Admin::V1
       render_error(fields: @category.errors.messages)
     end
 
-
     private
 
     def set_category
