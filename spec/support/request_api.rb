@@ -1,11 +1,9 @@
 module RequestAPI
-  class RequestFailedError < StandardError; end
-
   def json_body(symbolize_keys: false)
     json = JSON.parse(response.body)
     symbolize_keys ? json.deep_symbolize_keys : json
-  rescue RequestFailedError => e
-    return { error: e.inspect }
+  rescue StandardError
+    return {}
   end
 
   def auth_header(user = nil, merge_with: {})

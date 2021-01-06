@@ -1,4 +1,6 @@
 class Coupon < ApplicationRecord
+  include Paginatable
+
   validates :name, :code, :status, :due_date, :discount_value, presence: true
   validates :code, uniqueness: { case_sensitive: false }
   validates :discount_value, numericality: { greater_than: 0 }
