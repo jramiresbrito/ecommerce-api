@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       get 'home', to: 'home#index'
       resources :categories
       resources :system_requirements
+      resources :coupons
     end
   end
 
