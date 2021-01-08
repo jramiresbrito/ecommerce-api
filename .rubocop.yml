@@ -48,6 +48,8 @@ Style/HashTransformValues:
   Enabled: false
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
+Style/ClassAndModuleChildren:
+  Enabled: false
 Lint/MissingSuper:
   Enabled: false
 Lint/UnusedMethodArgument:

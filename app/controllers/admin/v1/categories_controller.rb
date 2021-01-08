@@ -3,7 +3,7 @@ module Admin::V1
     before_action :set_category, only: %i[update destroy]
 
     def index
-      @categories = Category.all
+      @categories = set_categories
     end
 
     def create
@@ -26,6 +26,11 @@ module Admin::V1
 
     def set_category
       @category = Category.find(params[:id])
+    end
+
+    def set_categories
+      permitted = params.permit({ search: :name }, { order: {} }, :page, :length)
+      Admin::ModelLoadingService.new(Category.all, permitted).call
     end
 
     def category_params
