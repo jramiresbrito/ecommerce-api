@@ -7,7 +7,9 @@ class Product < ApplicationRecord
   has_many :categories, through: :product_categories
   has_one_attached :image
 
-  validates :name, :description, :price, :image, presence: true
+  validates :name, :description, :price, :image, :status, presence: true
   validates :name, uniqueness: { case_sensitive: false }
   validates :price, numericality: { greater_than: 0 }
+
+  enum status: { available: 1, unavailable: 2 }
 end
