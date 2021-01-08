@@ -1,6 +1,6 @@
 module Admin::V1
   class CategoriesController < ApiController
-    before_action :set_category, only: %i[update destroy]
+    before_action :set_category, only: %i[show update destroy]
 
     def index
       @categories = set_categories
@@ -10,6 +10,8 @@ module Admin::V1
       @category = Category.new(category_params)
       save_category!
     end
+
+    def show; end
 
     def update
       @category.attributes = category_params
