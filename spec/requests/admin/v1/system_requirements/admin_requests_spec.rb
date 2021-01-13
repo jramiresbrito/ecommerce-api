@@ -6,15 +6,124 @@ RSpec.describe 'Admin V1 System Requirements as :admin', type: :request do
   context 'GET /system_requirements' do
     let(:url) { '/admin/v1/system_requirements' }
     let!(:system_requirements) { create_list(:system_requirement, 10) }
-    before { get url, headers: auth_header(user) }
 
-    it 'should return all systems requirements' do
-      expect(json_body['system_requirements']).to contain_exactly(
-        *system_requirements.as_json(except: %i[created_at updated_at])
-      )
+    context 'without any params' do
+      it 'returns 10 system_requirements' do
+        get url, headers: auth_header(user)
+        expect(json_body['system_requirements'].count).to eq 10
+      end
+
+      it 'returns 10 first System Requirements' do
+        get url, headers: auth_header(user)
+        expected_system_requirements = system_requirements[0..9].as_json(
+          except: %i[created_at updated_at]
+        )
+        expect(json_body['system_requirements']).to contain_exactly(*expected_system_requirements)
+      end
+
+      it 'returns success status' do
+        get url, headers: auth_header(user)
+        expect(response).to have_http_status(:ok)
+      end
+
+      it_behaves_like 'pagination meta attributes', { page: 1, length: 10, total: 10, total_pages: 1 } do
+        before { get url, headers: auth_header(user) }
+      end
     end
 
-    it 'should return success status' do
+    context 'with search[name] param' do
+      let!(:search_name_system_requirements) do
+        system_requirements = []
+        15.times { |n| system_requirements << create(:system_requirement, name: "Search #{n + 1}") }
+        system_requirements
+      end
+
+      let(:search_params) { { search: { name: 'Search' } } }
+
+      it 'returns only searched system_requirements limited by default pagination' do
+        get url, headers: auth_header(user), params: search_params
+        expected_system_requirements = search_name_system_requirements[0..9].map do |system_requirement|
+          system_requirement.as_json(except: %i[created_at updated_at])
+        end
+        expect(json_body['system_requirements']).to contain_exactly(*expected_system_requirements)
+      end
+
+      it 'returns success status' do
+        get url, headers: auth_header(user), params: search_params
+        expect(response).to have_http_status(:ok)
+      end
+
+      it_behaves_like 'pagination meta attributes', { page: 1, length: 10, total: 15, total_pages: 2 } do
+        before { get url, headers: auth_header(user), params: search_params }
+      end
+    end
+
+    context 'with pagination params' do
+      let(:page) { 2 }
+      let(:length) { 5 }
+
+      let(:pagination_params) { { page: page, length: length } }
+
+      it 'returns records sized by :length' do
+        get url, headers: auth_header(user), params: pagination_params
+        expect(json_body['system_requirements'].count).to eq length
+      end
+
+      it 'returns system_requirements limited by pagination' do
+        get url, headers: auth_header(user), params: pagination_params
+        expected_system_requirements = system_requirements[5..9].as_json(
+          except: %i[created_at updated_at]
+        )
+        expect(json_body['system_requirements']).to contain_exactly(*expected_system_requirements)
+      end
+
+      it 'returns success status' do
+        get url, headers: auth_header(user), params: pagination_params
+        expect(response).to have_http_status(:ok)
+      end
+
+      it_behaves_like 'pagination meta attributes', { page: 2, length: 5, total: 10, total_pages: 2 } do
+        before { get url, headers: auth_header(user), params: pagination_params }
+      end
+    end
+
+    context 'with order params' do
+      let(:order_params) { { order: { name: 'desc' } } }
+
+      it 'returns ordered system_requirements limited by default pagination' do
+        get url, headers: auth_header(user), params: order_params
+        system_requirements.sort! { |a, b| b[:name] <=> a[:name] }
+        expected_system_requirements = system_requirements[0..9].as_json(
+          except: %i[created_at updated_at]
+        )
+        expect(json_body['system_requirements']).to contain_exactly(*expected_system_requirements)
+      end
+
+      it 'returns success status' do
+        get url, headers: auth_header(user), params: order_params
+        expect(response).to have_http_status(:ok)
+      end
+
+      it_behaves_like 'pagination meta attributes', { page: 1, length: 10, total: 10, total_pages: 1 } do
+        before { get url, headers: auth_header(user), params: order_params }
+      end
+    end
+  end
+
+  context 'GET /system_requirements/:id' do
+    let(:system_requirement) { create(:system_requirement) }
+    let(:url) { "/admin/v1/system_requirements/#{system_requirement.id}" }
+
+    it 'returns requested SystemRequirement' do
+      get url, headers: auth_header(user)
+      expected_system_requirement = system_requirement.as_json(
+        except: %i[created_at updated_at]
+      )
+      expect(json_body['system_requirement']).to eq expected_system_requirement
+    end
+
+    it 'returns success status' do
+      get url, headers: auth_header(user)
       expect(response).to have_http_status(:ok)
     end
   end
@@ -22,141 +131,146 @@ RSpec.describe 'Admin V1 System Requirements as :admin', type: :request do
   context 'POST /system_requirements' do
     let(:url) { '/admin/v1/system_requirements' }
 
-    context 'valid params' do
-      let(:system_requirements_params) { { system_requirement: attributes_for(:system_requirement) }.to_json }
-      it 'should add a new system requirement' do
+    context 'with valid params' do
+      let(:system_requirement_params) { { system_requirement: attributes_for(:system_requirement) }.to_json }
+
+      it 'adds a new SystemRequirement' do
         expect do
-          post url, headers: auth_header(user), params: system_requirements_params
+          post url, headers: auth_header(user), params: system_requirement_params
         end.to change(SystemRequirement, :count).by(1)
       end
 
-      it 'should return the last added system requirement' do
-        post url, headers: auth_header(user), params: system_requirements_params
-        expected_system_requirement = SystemRequirement.last.as_json(except: %i[created_at updated_at])
+      it 'returns last added SystemRequirement' do
+        post url, headers: auth_header(user), params: system_requirement_params
+        expected_system_requirement = SystemRequirement.last.as_json(
+          except: %i[created_at updated_at]
+        )
         expect(json_body['system_requirement']).to eq expected_system_requirement
       end
 
-      it 'should return success status' do
-        post url, headers: auth_header(user), params: system_requirements_params
+      it 'returns success status' do
+        post url, headers: auth_header(user), params: system_requirement_params
         expect(response).to have_http_status(:ok)
       end
     end
 
-    context 'invalid params' do
-      let(:system_requirements_invalid_params) do
+    context 'with invalid params' do
+      let(:system_requirement_invalid_params) do
         { system_requirement: attributes_for(:system_requirement, name: nil) }.to_json
       end
 
-      it "shouldn't add a new system requirement" do
+      it 'does not add a new SystemRequirement' do
         expect do
-          post url, headers: auth_header(user), params: system_requirements_invalid_params
+          post url, headers: auth_header(user), params: system_requirement_invalid_params
         end.to_not change(SystemRequirement, :count)
       end
 
-      it 'should return error messages' do
-        post url, headers: auth_header(user), params: system_requirements_invalid_params
+      it 'returns error message' do
+        post url, headers: auth_header(user), params: system_requirement_invalid_params
         expect(json_body['errors']['fields']).to have_key('name')
       end
 
-      it 'should return unprocessable_entity - status code 422' do
-        post url, headers: auth_header(user), params: system_requirements_invalid_params
+      it 'returns unprocessable_entity status' do
+        post url, headers: auth_header(user), params: system_requirement_invalid_params
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
   end
 
-  context 'PATCH /categories/:id' do
-    let(:system_requirements) { create(:system_requirement) }
-    let(:url) { "/admin/v1/system_requirements/#{system_requirements.id}" }
+  context 'PATCH /system_requirements/:id' do
+    let(:system_requirement) { create(:system_requirement) }
+    let(:url) { "/admin/v1/system_requirements/#{system_requirement.id}" }
 
-    context 'valid params' do
-      let(:new_name) { 'My new System Requirements' }
-      let(:system_requirements_params) { { system_requirement: { name: new_name } }.to_json }
+    context 'with valid params' do
+      let(:new_name) { 'My new SystemRequirement' }
+      let(:system_requirement_params) { { system_requirement: { name: new_name } }.to_json }
 
-      it 'should update a system requirements' do
-        patch url, headers: auth_header(user), params: system_requirements_params
-        system_requirements.reload
-        expect(system_requirements.name).to eq new_name
+      it 'updates SystemRequirement' do
+        patch url, headers: auth_header(user), params: system_requirement_params
+        system_requirement.reload
+        expect(system_requirement.name).to eq new_name
       end
 
-      it 'should return the updated system requirements' do
-        patch url, headers: auth_header(user), params: system_requirements_params
-        system_requirements.reload
-        expected_system_requirements = system_requirements.as_json(except: %i[created_at updated_at])
-        expect(json_body['system_requirement']).to eq expected_system_requirements
+      it 'returns updated SystemRequirement' do
+        patch url, headers: auth_header(user), params: system_requirement_params
+        system_requirement.reload
+        expected_system_requirement = system_requirement.as_json(
+          except: %i[created_at updated_at]
+        )
+        expect(json_body['system_requirement']).to eq expected_system_requirement
       end
 
-      it 'should return success status' do
-        patch url, headers: auth_header(user), params: system_requirements_params
+      it 'returns success status' do
+        patch url, headers: auth_header(user), params: system_requirement_params
         expect(response).to have_http_status(:ok)
       end
     end
 
-    context 'invalid params' do
-      let(:system_requirements_invalid_params) do
+    context 'with invalid params' do
+      let(:system_requirement_invalid_params) do
         { system_requirement: attributes_for(:system_requirement, name: nil) }.to_json
       end
 
-      it "shouldn't update a system requirement" do
-        old_name = system_requirements.name
-        patch url, headers: auth_header(user), params: system_requirements_invalid_params
-        system_requirements.reload
-        expect(system_requirements.name).to eq old_name
+      it 'does not update SystemRequirement' do
+        old_name = system_requirement.name
+        patch url, headers: auth_header(user), params: system_requirement_invalid_params
+        system_requirement.reload
+        expect(system_requirement.name).to eq old_name
       end
 
-      it 'should return error messages' do
-        patch url, headers: auth_header(user), params: system_requirements_invalid_params
+      it 'returns error message' do
+        patch url, headers: auth_header(user), params: system_requirement_invalid_params
         expect(json_body['errors']['fields']).to have_key('name')
       end
 
-      it 'should return unprocessable_entity - status code 422' do
-        patch url, headers: auth_header(user), params: system_requirements_invalid_params
+      it 'returns unprocessable_entity status' do
+        patch url, headers: auth_header(user), params: system_requirement_invalid_params
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
   end
 
-  context 'DELETE /categories/:id' do
-    let!(:system_requirements) { create(:system_requirement) }
-    let(:url) { "/admin/v1/system_requirements/#{system_requirements.id}" }
+  context 'DELETE /system_requirements/:id' do
+    let!(:system_requirement) { create(:system_requirement) }
+    let(:url) { "/admin/v1/system_requirements/#{system_requirement.id}" }
 
-    context 'without an associated game' do
-      it 'should remove a system requirements' do
+    context 'without an associated Game' do
+      it 'removes SystemRequirement' do
         expect do
           delete url, headers: auth_header(user)
         end.to change(SystemRequirement, :count).by(-1)
       end
 
-      it 'should return success - status code 204' do
+      it 'returns success status' do
         delete url, headers: auth_header(user)
         expect(response).to have_http_status(:no_content)
       end
 
-      it "shouldn't return any body content" do
+      it 'does not return any body content' do
         delete url, headers: auth_header(user)
         expect(json_body).to_not be_present
       end
     end
 
-    context 'with an associated game' do
+    context 'with an associated Game' do
       before(:each) do
-        create(:game, system_requirement: system_requirements)
+        create(:game, system_requirement: system_requirement)
       end
 
-      it "shouldn't remove the system requirements" do
+      it 'does not remove SystemRequirement' do
         expect do
           delete url, headers: auth_header(user)
         end.to_not change(SystemRequirement, :count)
       end
 
-      it 'should return error on :base key' do
-        delete url, headers: auth_header(user)
-        expect(json_body['errors']['fields']).to have_key('base')
-      end
-
-      it 'should return unprocessable_entity status' do
+      it 'returns unprocessable_entity status' do
         delete url, headers: auth_header(user)
         expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it 'returns error on :base key' do
+        delete url, headers: auth_header(user)
+        expect(json_body['errors']['fields']).to have_key('base')
       end
     end
   end
