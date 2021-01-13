@@ -83,7 +83,7 @@ RSpec.describe 'Admin V1 Categories as :admin', type: :request do
       end
 
       it_behaves_like 'pagination meta attributes', { page: 2, length: 5, total: 10, total_pages: 2 } do
-        before { get url, headers: auth_header(user), params: search_params }
+        before { get url, headers: auth_header(user), params: pagination_params }
       end
     end
 

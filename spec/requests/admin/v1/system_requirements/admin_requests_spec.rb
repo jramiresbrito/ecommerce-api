@@ -16,7 +16,7 @@ RSpec.describe 'Admin V1 System Requirements as :admin', type: :request do
       it 'returns 10 first System Requirements' do
         get url, headers: auth_header(user)
         expected_system_requirements = system_requirements[0..9].as_json(
-          only: %i[id name operational_system storage processor memory video_board]
+          except: %i[created_at updated_at]
         )
         expect(json_body['system_requirements']).to contain_exactly(*expected_system_requirements)
       end
@@ -43,7 +43,7 @@ RSpec.describe 'Admin V1 System Requirements as :admin', type: :request do
       it 'returns only searched system_requirements limited by default pagination' do
         get url, headers: auth_header(user), params: search_params
         expected_system_requirements = search_name_system_requirements[0..9].map do |system_requirement|
-          system_requirement.as_json(only: %i[id name operational_system storage processor memory video_board])
+          system_requirement.as_json(except: %i[created_at updated_at])
         end
         expect(json_body['system_requirements']).to contain_exactly(*expected_system_requirements)
       end
@@ -72,7 +72,7 @@ RSpec.describe 'Admin V1 System Requirements as :admin', type: :request do
       it 'returns system_requirements limited by pagination' do
         get url, headers: auth_header(user), params: pagination_params
         expected_system_requirements = system_requirements[5..9].as_json(
-          only: %i[id name operational_system storage processor memory video_board]
+          except: %i[created_at updated_at]
         )
         expect(json_body['system_requirements']).to contain_exactly(*expected_system_requirements)
       end
@@ -94,7 +94,7 @@ RSpec.describe 'Admin V1 System Requirements as :admin', type: :request do
         get url, headers: auth_header(user), params: order_params
         system_requirements.sort! { |a, b| b[:name] <=> a[:name] }
         expected_system_requirements = system_requirements[0..9].as_json(
-          only: %i[id name operational_system storage processor memory video_board]
+          except: %i[created_at updated_at]
         )
         expect(json_body['system_requirements']).to contain_exactly(*expected_system_requirements)
       end
@@ -117,7 +117,7 @@ RSpec.describe 'Admin V1 System Requirements as :admin', type: :request do
     it 'returns requested SystemRequirement' do
       get url, headers: auth_header(user)
       expected_system_requirement = system_requirement.as_json(
-        only: %i[id name operational_system storage processor memory video_board]
+        except: %i[created_at updated_at]
       )
       expect(json_body['system_requirement']).to eq expected_system_requirement
     end
@@ -143,7 +143,7 @@ RSpec.describe 'Admin V1 System Requirements as :admin', type: :request do
       it 'returns last added SystemRequirement' do
         post url, headers: auth_header(user), params: system_requirement_params
         expected_system_requirement = SystemRequirement.last.as_json(
-          only: %i[id name operational_system storage processor memory video_board]
+          except: %i[created_at updated_at]
         )
         expect(json_body['system_requirement']).to eq expected_system_requirement
       end
@@ -195,7 +195,7 @@ RSpec.describe 'Admin V1 System Requirements as :admin', type: :request do
         patch url, headers: auth_header(user), params: system_requirement_params
         system_requirement.reload
         expected_system_requirement = system_requirement.as_json(
-          only: %i[id name operational_system storage processor memory video_board]
+          except: %i[created_at updated_at]
         )
         expect(json_body['system_requirement']).to eq expected_system_requirement
       end

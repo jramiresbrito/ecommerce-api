@@ -15,7 +15,7 @@ RSpec.describe 'Admin V1 Coupons as :admin', type: :request do
 
       it 'returns 10 first Coupons' do
         get url, headers: auth_header(user)
-        expected_coupons = coupons[0..9].as_json(only: %i[id name code status discount_value due_date])
+        expected_coupons = coupons[0..9].as_json(except: %i[created_at updated_at])
         expect(json_body['coupons']).to contain_exactly(*expected_coupons)
       end
 
@@ -41,7 +41,7 @@ RSpec.describe 'Admin V1 Coupons as :admin', type: :request do
       it 'returns only searched coupons limited by default pagination' do
         get url, headers: auth_header(user), params: search_params
         expected_coupons = search_name_coupons[0..9].map do |coupon|
-          coupon.as_json(only: %i[id name code status discount_value due_date])
+          coupon.as_json(except: %i[created_at updated_at])
         end
         expect(json_body['coupons']).to contain_exactly(*expected_coupons)
       end
@@ -69,7 +69,7 @@ RSpec.describe 'Admin V1 Coupons as :admin', type: :request do
 
       it 'returns coupons limited by pagination' do
         get url, headers: auth_header(user), params: pagination_params
-        expected_coupons = coupons[5..9].as_json(only: %i[id name code status discount_value due_date])
+        expected_coupons = coupons[5..9].as_json(except: %i[created_at updated_at])
         expect(json_body['coupons']).to contain_exactly(*expected_coupons)
       end
 
@@ -89,7 +89,7 @@ RSpec.describe 'Admin V1 Coupons as :admin', type: :request do
       it 'returns ordered coupons limited by default pagination' do
         get url, headers: auth_header(user), params: order_params
         coupons.sort! { |a, b| b[:name] <=> a[:name] }
-        expected_coupons = coupons[0..9].as_json(only: %i[id name code status discount_value due_date])
+        expected_coupons = coupons[0..9].as_json(except: %i[created_at updated_at])
         expect(json_body['coupons']).to contain_exactly(*expected_coupons)
       end
 
@@ -110,7 +110,7 @@ RSpec.describe 'Admin V1 Coupons as :admin', type: :request do
 
     it 'returns requested Coupon' do
       get url, headers: auth_header(user)
-      expected_coupon = coupon.as_json(only: %i[id name code status discount_value due_date])
+      expected_coupon = coupon.as_json(except: %i[created_at updated_at])
       expect(json_body['coupon']).to eq expected_coupon
     end
 
@@ -134,7 +134,7 @@ RSpec.describe 'Admin V1 Coupons as :admin', type: :request do
 
       it 'returns last added Coupon' do
         post url, headers: auth_header(user), params: coupon_params
-        expected_coupon = Coupon.last.as_json(only: %i[id name code status discount_value due_date])
+        expected_coupon = Coupon.last.as_json(except: %i[created_at updated_at])
         expect(json_body['coupon']).to eq expected_coupon
       end
 
@@ -184,7 +184,7 @@ RSpec.describe 'Admin V1 Coupons as :admin', type: :request do
       it 'returns updated Coupon' do
         patch url, headers: auth_header(user), params: coupon_params
         coupon.reload
-        expected_coupon = coupon.as_json(only: %i[id name code status discount_value due_date])
+        expected_coupon = coupon.as_json(except: %i[updated_at created_at])
         expect(json_body['coupon']).to eq expected_coupon
       end
 

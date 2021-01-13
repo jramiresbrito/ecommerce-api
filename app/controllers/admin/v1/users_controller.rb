@@ -1,14 +1,16 @@
 module Admin::V1
   class UsersController < ApiController
-    before_action :set_user, only: %i[update destroy]
+    before_action :set_user, only: %i[show update destroy]
 
     def index
-      @loading_service = Admin::ModelLoadingService.new(User.all, searchable_params)
+      scope_without_current_user = User.where.not(id: @current_user.id)
+      @loading_service = Admin::ModelLoadingService.new(scope_without_current_user, searchable_params)
       @loading_service.call
     end
 
     def create
-      @user = User.new(user_params)
+      @user = User.new
+      @user.attributes = user_params
       save_user!
     end
 
@@ -16,6 +18,8 @@ module Admin::V1
       @user.attributes = user_params
       save_user!
     end
+
+    def show; end
 
     def destroy
       @user.destroy!
@@ -25,21 +29,21 @@ module Admin::V1
 
     private
 
+    def set_user
+      @user = User.find(params[:id])
+    end
+
     def user_params
       return {} unless params.key?(:user)
 
-      params.require(:user).permit(:id, :name, :password, :password_confirmation, :profile)
+      params.require(:user).permit(:id, :name, :email, :password, :password_confirmation, :profile)
     end
 
     def save_user!
       @user.save!
       render :show
     rescue StandardError
-      render_error(fields: @users.errors.messages)
-    end
-
-    def set_user
-      @user = User.find(params[:id])
+      render_error(fields: @user.errors.messages)
     end
 
     def searchable_params
