@@ -1,4 +1,7 @@
 class License < ApplicationRecord
+  include LikeSearchable
+  include Paginatable
+
   belongs_to :game
 
   validates :key, :platform, :status, presence: true
