@@ -6,26 +6,35 @@ if Rails.env.development? || Rails.env.test?
     task prime: 'db:setup' do
       include FactoryBot::Syntax::Methods
 
+      puts "Creating Users..."
       15.times do
         profile = %i[admin client].sample
         create(:user, profile: profile)
       end
+      puts "Users Created!"
 
+      puts "Creating Sytem Requirements..."
       system_requirements = []
       %w[Basic Intermediate Advanced].each do |sr_name|
         system_requirements << create(:system_requirement, name: sr_name)
       end
+      puts "System Requirements Created!"
 
+      puts "Creating Coupons..."
       15.times do
         coupon_status = %i[active inactive].sample
         create(:coupon, status: coupon_status)
       end
+      puts "Coupons Created!"
 
+      puts "Creating Categories..."
       categories = []
       25.times do
         categories << create(:category, name: Faker::Game.unique.genre)
       end
+      puts "Categories Created!"
 
+      puts "Creating Games..."
       30.times do
         game_name = Faker::Game.unique.title
         availability = %i[available unavailable].sample
@@ -36,6 +45,17 @@ if Rails.env.development? || Rails.env.test?
         create(:product, name: game_name, status: availability,
                          category_ids: game_categories_ids, productable: game)
       end
+      puts "Games Created!"
+
+      puts "Creating Licenses..."
+      50.times do
+        game = Game.all[0...5].sample
+        status = %i[available in_use inactive].sample
+        platform = %i[steam battle_net origin].sample
+        create(:license, status: status, platform: platform, game: game)
+      end
+      puts "Licenses Created!"
+      puts "Done."
     end
   end
 end
