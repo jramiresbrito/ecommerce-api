@@ -34,7 +34,7 @@ RSpec.describe 'Admin V1 Licenses as :admin', type: :request do
     context 'with search[key] param' do
       let!(:search_key_licenses) do
         licenses = []
-        15.times { |n| licenses << create(:license, key: "SRC-#{n + 1}") }
+        15.times { |n| licenses << create(:license, key: "SRC-#{n + 1}", game: game) }
         licenses
       end
 
