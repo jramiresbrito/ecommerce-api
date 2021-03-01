@@ -1,6 +1,7 @@
 if Rails.env.development? || Rails.env.test?
   require 'factory_bot'
 
+  # rubocop:disable Metrics/BlockLength
   namespace :dev do
     desc 'Sample data for local development environment'
     task prime: 'db:setup' do
@@ -40,10 +41,12 @@ if Rails.env.development? || Rails.env.test?
         availability = %i[available unavailable].sample
         categories_count = rand(0..3)
         game_categories_ids = []
+        featured = [true, false].sample
+        release_date = (0..15).to_a.sample.days.ago
         categories_count.times { game_categories_ids << Category.all.sample.id }
-        game = create(:game, system_requirement: system_requirements.sample)
+        game = create(:game, system_requirement: system_requirements.sample, release_date: release_date)
         create(:product, name: game_name, status: availability,
-                         category_ids: game_categories_ids, productable: game)
+                         featured: featured, category_ids: game_categories_ids, productable: game)
       end
       puts "Games Created!"
 
@@ -58,4 +61,5 @@ if Rails.env.development? || Rails.env.test?
       puts "Done."
     end
   end
+  # rubocop:enable Metrics/BlockLength
 end
